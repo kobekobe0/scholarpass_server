@@ -63,7 +63,7 @@ const handleRequest = async (req, res) => {
         deleteFile(filePath);  // Ensure file is deleted on error
     });
     pdfParser.on("readable", (meta) => {
-        //console.log("PDF Metadata", meta)
+        //when pdf is not generated from student portal
         if (meta && meta.Meta){
             if(!meta.Meta.Creator.includes(process.env.PDF_CREATOR) || !meta.Meta.Producer.includes(process.env.PDF_PRODUCER)){
                 responseSent = true;
@@ -79,7 +79,9 @@ const handleRequest = async (req, res) => {
         const texts = extractText(pdfData);
         const details = extractDetails(texts);
         const schedules = groupSchedules(extractScheduleBlock(texts));
+        
 
+        console.log(texts)
         responseSent = true;
         deleteFile(filePath);
 

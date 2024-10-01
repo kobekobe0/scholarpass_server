@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
-import Student from '../models/Student.js';
+import SecurityGuard from '../models/SecurityGuard.js';
 const SECRET_KEY = process.env.SECRET_KEY;
 
-export const studentAuth = async (req, res, next) => {
+export const guardAuth = async (req, res, next) => {
     const token = req.header('Authorization');
 
     if (!token) {
@@ -11,8 +11,8 @@ export const studentAuth = async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
-        const student = await Student.findById(decoded._id);
-        if (!student) return res.status(404).json({ message: "Unauthorized" });
+        const guard = await SecurityGuard.findById(decoded._id);
+        if (!guard) return res.status(404).json({ message: "Unauthorized" });
         req.user = decoded;
         next();
     } catch (error) {

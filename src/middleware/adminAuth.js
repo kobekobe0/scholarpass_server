@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
-import Student from '../models/Student.js';
+import Admin from '../models/Admin.js';
 const SECRET_KEY = process.env.SECRET_KEY;
 
-export const studentAuth = async (req, res, next) => {
+export const adminAuth = async (req, res, next) => {
     const token = req.header('Authorization');
 
     if (!token) {
@@ -11,8 +11,8 @@ export const studentAuth = async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
-        const student = await Student.findById(decoded._id);
-        if (!student) return res.status(404).json({ message: "Unauthorized" });
+        const admin = await Admin.findById(decoded._id);
+        if (!admin) return res.status(404).json({ message: "Unauthorized" });
         req.user = decoded;
         next();
     } catch (error) {

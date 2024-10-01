@@ -6,17 +6,6 @@ const studentLogSchema = new Schema({
         type: String,
         ref: 'Student'
     },
-    studentNumber: {
-        type: String,
-    },
-    fullName: {
-        type: String,
-        required: true,
-    },
-    department: {
-        type: String,
-        required: true,
-    },
     timeIn : {
         type: Date,
         required: true,
@@ -27,7 +16,12 @@ const studentLogSchema = new Schema({
     vehicle: {
         type: String,
         ref: 'Vehicle'
-    }
+    },
+    violationID: {
+        type: String,
+        ref: 'ViolationLog',
+        default: null
+    },
 }); 
 
 studentLogSchema.plugin(mongoosePaginate);

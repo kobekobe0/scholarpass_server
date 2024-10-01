@@ -12,9 +12,13 @@ export const createStudent = async (req, res) => {
 
     try {
         const studentExists = await Student.findOne({ studentNumber: student.studentNumber });
-
         if(studentExists){
             return res.status(400).json({ message: `Account with student number ${student.studentNumber} already exists` });
+        }
+
+        const emailExists = await Student.findOne({ email: student.email });
+        if(emailExists){
+            return res.status(400).json({ message: `Account with email ${student.email} already exists` });
         }
 
         const hashedPassword = await bcrypt.hash(student.password, 12);

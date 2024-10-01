@@ -13,6 +13,8 @@ import mongoose from "mongoose";
 import studentRouter from "./routes/Student.js";
 import vehicleRouter from "./routes/Vehicle.js";
 import resetPasswordRouter from "./routes/ResetPassword.js";
+import studentLog from "./routes/StudentLog.js";
+import securityGuardRouter from "./routes/SecurityGuard.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -67,6 +69,8 @@ app.use(sanitizeObjectWithTrimMiddleware)
 app.use("/api/student", studentRouter)
 app.use("/api/vehicle", vehicleRouter)
 app.use("/api/reset-password", resetPasswordRouter)
+app.use("/api/log", studentLog)
+app.use("/api/guard", securityGuardRouter)
 
 //shutdown
 app.post('/api/shutdown', (req, res) => {

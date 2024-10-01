@@ -1,46 +1,15 @@
 import { Schema, model } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
 
-const nameSchema = new Schema({
-    first: {
-        type: String,
-        required: true,
-    },
-    last: {
-        type: String,
-        required: true,
-    },
-    middle: {
-        type: String,
-    },
-    suffix: {
-        type: String,
-    },
-});
-
 const violationLogSchema = new Schema({
-    name: {
-        type: nameSchema,
-        required: true,
+    studentID: {
+        type: String,
+        ref: 'Student'
     },
-    timeIn : {
-        type: Date,
-        required: true,
-        default: Date.now
-    },
-    timeOut : {
-        type: Date,
-    },
-    violation: {
+    violation: [{
         type: String,
         required: true,
-    },
-    vehicle: {
-        type: String,
-    },
-    studentNumber: {
-        type: String,
-    },
+    }],
 }); 
 
 violationLogSchema.plugin(mongoosePaginate);

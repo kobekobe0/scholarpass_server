@@ -16,14 +16,23 @@ export const sanitizeString = (str) => {
 }
 
 /**
- * Recursively sanitizes all string properties in an object
- * @param {Object} obj - The object to sanitize
- * @returns {Object} - The sanitized object
+ * Recursively sanitizes all string properties in an object or array,
+ * but ensures arrays of strings are not split into individual characters.
+ * @param {Object|Array} obj - The object or array to sanitize
+ * @returns {Object|Array} - The sanitized object or array
  */
 export const sanitizeObjectWithTrim = (obj) => {
     if (Array.isArray(obj)) {
-        return obj.map(item => sanitizeObjectWithTrim(item));
+        // Check if the array contains strings
+        if (obj.every(item => typeof item === 'string')) {
+            // Return the array as-is but with sanitized strings
+            return obj.map(item => sanitizeString(item));
+        } else {
+            // Recursively sanitize objects in the array
+            return obj.map(item => sanitizeObjectWithTrim(item));
+        }
     }
+
     const sanitizedObj = {};
     for (const key in obj) {
         if (obj.hasOwnProperty(key)) {
@@ -37,7 +46,8 @@ export const sanitizeObjectWithTrim = (obj) => {
         }
     }
     return sanitizedObj;
-}
+};
+
 
 /**
  * Middleware to sanitize request body

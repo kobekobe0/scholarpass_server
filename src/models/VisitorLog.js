@@ -41,6 +41,10 @@ const visitorLogSchema = new Schema({
     plateNumber: {
         type: String,
     },
+    visitorCardID: {
+        type: String,
+        required: true,
+    },
 }); 
 
 visitorLogSchema.plugin(mongoosePaginate);
