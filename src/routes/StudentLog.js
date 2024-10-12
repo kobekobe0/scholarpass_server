@@ -15,6 +15,6 @@ studentLogRouter.get('/student/:id', getStudentLogs)
 studentLogRouter.get('/violation/:id', getStudentViolation)
 
 studentLogRouter.get('/logging/student', getStudentForLogging)
-studentLogRouter.get('/logging/visitor', getVisitorForLogging)
+studentLogRouter.get('/logging/visitor/:visitorCardID', getVisitorForLogging)
 
 export default studentLogRouter;

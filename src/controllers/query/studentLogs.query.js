@@ -27,7 +27,7 @@ export const getStudentViolation = async (req, res) => {
 }
 
 export const getStudentForLogging = async (req, res) => {
-    const {studentID, vehicleID} = req.body // qrCode
+    const {studentID, vehicleID} = req.query // qrCode
 
     try{
         let vehicle = null
@@ -47,7 +47,7 @@ export const getStudentForLogging = async (req, res) => {
 }
 
 export const getVisitorForLogging = async (req, res) => {
-    const {visitorCardID} = req.body // qrCode
+    const {visitorCardID} = req.params // qrCode
 
     try{
         const visitorCard = await VisitorQR.findOne({visitorCardID})
