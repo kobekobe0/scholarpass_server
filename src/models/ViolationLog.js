@@ -6,10 +6,10 @@ const violationLogSchema = new Schema({
         type: String,
         ref: 'Student'
     },
-    violation: [{
+    violation:{
         type: String,
         required: true,
-    }],
+    },
     createdAt: {
         type: Date,
         default: Date.now

@@ -8,10 +8,11 @@ const studentLogSchema = new Schema({
     },
     timeIn : {
         type: Date,
-        required: true,
+        default: null
     },
     timeOut : {
         type: Date,
+        default: null
     },
     vehicle: {
         type: String,
@@ -22,6 +23,10 @@ const studentLogSchema = new Schema({
         ref: 'ViolationLog',
         default: null
     },
+    logDate: {
+        type: Date,
+        default: Date.now
+    }
 }); 
 
 studentLogSchema.plugin(mongoosePaginate);

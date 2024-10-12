@@ -13,6 +13,7 @@ const visitorLogSchema = new Schema({
     },
     timeOut : {
         type: Date,
+        default: null
     },
     agency: {
         type: String
@@ -30,10 +31,6 @@ const visitorLogSchema = new Schema({
         type: String,
         required: true,
     },
-    picture: {
-        type: String,
-        required: true
-    }, 
     visitorCardID: {
         type: String,
         required: true,

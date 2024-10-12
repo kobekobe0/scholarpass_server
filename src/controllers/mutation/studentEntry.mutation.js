@@ -4,43 +4,14 @@ import VisitorQR from '../../models/VisitorQR.js';
 import VisitorLog from '../../models/VisitorLog.js';
 import { io } from '../../index.js';
 
-
-//body should look like
-
-/*
-studentID: String,
-violation: [String],
-vehicle: String
-*/
-
-const createViolationLog = async (student) => {
-    const newViolation = await ViolationLog.create({
-        studentID: student.studentID,
-        violation: student.violation,
-    });
-    return newViolation;
-}
-
-const createStudentLog = async (student) => {
-    let studentLog;
-    if(student.violation){
-        const newViolation = await createViolationLog(student);
-        
-        studentLog = {
-            studentID: student.studentID,
-            timeIn: new Date(),
-            violationID: newViolation._id,
-            vehicle: student?.vehicle
-        }
-    //TODO: create student entry log also
-    } else {
-        studentLog = {
-            studentID: student.studentID,
-            timeIn: new Date(),
-        }
-    }
-
-    return await StudentLog.create(studentLog);
+const createStudentLog = async (studentID, vehicleID) => {
+    const newLog = await StudentLog.create({
+        studentID,
+        vehicle: vehicleID || null,
+        timeIn: new Date(),
+        logDate: new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    })
+    return newLog;
 }
 
 const logOutStudent = async (studentLog) => {
@@ -55,42 +26,27 @@ const logOutStudent = async (studentLog) => {
 
 export const logStudent = async (req, res) => {
     try {
-    const student = req.body;
-    console.log(student);
-    let studentLog
+        const { studentID, vehicleID, status } = req.body;
 
-    //check last student log of student
-    const lastLog = await StudentLog.findOne({studentID: student.studentID}).sort({timeIn: -1});
-    
-    //on first enter
-    if(!lastLog){
-        studentLog = await createStudentLog(student);
-        return res.status(200).json({message: "Student logged in"});
-    }
-
-    //TODO: handle case where it is another day
-    if(lastLog.timeIn.getDate() != new Date().getDate()){
-        //log out student
-        await logOutStudent(lastLog);
-        studentLog = await createStudentLog(student);
-        return res.status(200).json({message: "Student logged in"});
-    }
-
-    if(!lastLog.timeOut){
-        //log out student
-        await logOutStudent(lastLog);
-        //TODO: return populated student with pic
-        return res.status(200).json({message: "Student logged out"});
-    }
-    
-    // log in student
-    studentLog = await createStudentLog(student);
-    return res.status(200).json({message: "Student logged in"});
-
+        if(status == "IN") {
+            const newLog = await createStudentLog(studentID, vehicleID);
+            if(!newLog) return res.status(500).json({ message: "Failed to log student" });
+            return res.status(200).json({ log: newLog })
+        } else if(status == "OUT") {
+            const studentLog = await StudentLog.findOne({ studentID }).sort({timeIn: -1});
+            if(!studentLog) {
+                const newLog = await createStudentLog(studentID, vehicleID);
+                if(!newLog) return res.status(500).json({ message: "Failed to log student" });
+                return res.status(200).json({ log: newLog })
+            }   
+            await logOutStudent(studentLog);
+            return res.status(200).json({ log: studentLog })   
+        }
     } catch (error) {
         return res.status(500).json({ message: "Failed to log student", error: error.message });
     }
-}
+};
+
 
 export const createVisitorQR = async (req, res) => {
     try{
@@ -122,41 +78,63 @@ const createVisitorLog = async (visitor, cardID) => {
     const visitorLog = await VisitorLog.create({
         name: visitor?.name,
         purpose: visitor?.purpose,
-        vehicle: visitor?.vehicle,
         visitorCardID: cardID,
-        plateNumber: visitor?.plateNumber,
+        timeIn: new Date(),
+        address: visitor?.address,
+        personToVisit: visitor?.personToVisit,
+        number: visitor?.number,
+        agency: visitor?.agency,
     });
     return visitorLog;
 }
 
 export const logVisitor = async (req, res) => {
-    const visitor = req.body;
+    const {visitor} = req.body;
     const cardID = req.params.id;
 
     try {
-        //get latest visitor log associated with card
-        const lastLog = await VisitorLog.findOne({
-            visitorCardID: cardID,
-        }).sort({timeIn: -1});
+        const cardQR = await VisitorQR.findById(cardID);
+        if(!cardQR) return res.status(404).json({ message: "Invalid Visitor Card" });
 
-        //if no log found
-        if(!lastLog){
-            const visitorLog = await createVisitorLog(visitor, cardID);
-            return res.status(200).json({ message: "Visitor logged in" });
-        }
-
-        //if visitor has not logged out
-        if(!lastLog.timeOut){
+        const lastLog = await VisitorLog.findOne({ visitorCardID: cardID }).sort({timeIn: -1});
+        if(lastLog.timeOut == null && lastLog.timeIn != null) {
+            //log out visitor
             lastLog.timeOut = new Date();
             lastLog.save();
             return res.status(200).json({ message: "Visitor logged out" });
         }
 
-        //log in visitor
-        const visitorLog = await createVisitorLog(visitor, cardID);
-        return res.status(200).json({ message: "Visitor logged in" });
+        const newLog = await createVisitorLog(visitor, cardID);
+        if(!newLog) return res.status(500).json({ message: "Failed to log visitor" });
+        cardQR.inUse = true;
+        await cardQR.save();
+
+        io.emit('visitor-in', newLog);
+
+        return res.status(200).json({ log: newLog });
 
     } catch (error){
         return res.status(500).json({ message: "Failed to log visitor", error: error.message });
+    }
+}
+
+const createViolationLog = async (studentID, violation) => {
+    const newViolation = await ViolationLog.create({
+        studentID: studentID,
+        violation: violation,
+    });
+    return newViolation;
+}
+
+
+export const logViolation = async (req, res) => {
+    const { studentID, violation } = req.body;
+
+    try {
+        const newViolation = await createViolationLog(studentID, violation );
+        if(!newViolation) return res.status(500).json({ message: "Failed to log violation" });
+        return res.status(200).json({ violation: newViolation });
+    } catch (error) {
+        return res.status(500).json({ message: "Failed to log violation", error: error.message });
     }
 }

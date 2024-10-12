@@ -1,6 +1,6 @@
 import express from "express";
-import { checkVisitorQR, logStudent, logVisitor } from "../controllers/mutation/studentEntry.mutation.js";
-import { getStudentLogs, getStudentViolation } from "../controllers/query/studentLogs.query.js";
+import { checkVisitorQR, logStudent, logViolation, logVisitor } from "../controllers/mutation/studentEntry.mutation.js";
+import { getStudentForLogging, getStudentLogs, getStudentViolation, getVisitorForLogging } from "../controllers/query/studentLogs.query.js";
 
 const studentLogRouter = express.Router();
 
@@ -8,8 +8,12 @@ const studentLogRouter = express.Router();
 studentLogRouter.post('/student', logStudent)
 studentLogRouter.post('/visitor/:id', checkVisitorQR)
 studentLogRouter.post('/visitor', logVisitor)
+studentLogRouter.post('/violation', logViolation)
 
 studentLogRouter.get('/student/:id', getStudentLogs)
 studentLogRouter.get('/violation/:id', getStudentViolation)
+
+studentLogRouter.get('/logging/student', getStudentForLogging)
+studentLogRouter.get('/logging/visitor', getVisitorForLogging)
 
 export default studentLogRouter;

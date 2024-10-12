@@ -6,6 +6,10 @@ const visitorQRSchema = new Schema({
         type: String,
         required: true,
     },
+    inUse: {
+        type: Boolean,
+        default: false
+    }
 }); 
 
 visitorQRSchema.plugin(mongoosePaginate);
