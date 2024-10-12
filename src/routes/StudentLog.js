@@ -6,9 +6,8 @@ const studentLogRouter = express.Router();
 
 //TODO: Add security guard validation
 studentLogRouter.post('/student', logStudent)
-studentLogRouter.post('/visitor/:id', checkVisitorQR)
 studentLogRouter.post('/visitor-qr/create', createVisitorQR)
-studentLogRouter.post('/visitor', logVisitor)
+studentLogRouter.post('/visitor/:id', logVisitor)
 studentLogRouter.post('/violation', logViolation)
 
 studentLogRouter.get('/student/:id', getStudentLogs)
