@@ -52,7 +52,7 @@ export const createVisitorQR = async (req, res) => {
     try{
         const visitorCardCount = await VisitorQR.countDocuments();
         const visitorQR = await VisitorQR.create({
-            visitorID: visitorCardCount + 1,
+            cardNumber: visitorCardCount + 1,
         });
         return res.status(200).json({ visitorQR });
     } catch (error) {

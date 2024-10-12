@@ -2,19 +2,20 @@ import * as dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
 
-const connectToMongoDB = () => {
-    mongoose.connect(process.env.MONGODB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    });
-
-    mongoose.connection.once("open", () => {
+const connectToMongoDB = async () => {
+    try {
+        await mongoose.connect(process.env.MONGODB_URI, {
+            serverSelectionTimeoutMS: 20000, // Timeout after 20 seconds
+        });
         console.log("Connected to MongoDB");
-    });
+    } catch (error) {
+        console.error("MongoDB connection error:", error);
+        // Optionally, you could implement retry logic here
+    }
 };
 
-const db = mongoose.connection;
-
-db.on("error", console.error.bind(console, "MongoDB connection error"));
+mongoose.connection.on("error", (err) => {
+    console.error("MongoDB connection error:", err);
+});
 
 export default connectToMongoDB;
