@@ -1,8 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import path from 'path';
 import sharp from 'sharp';
-import fs from 'fs';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -15,21 +13,23 @@ const processImage = async (req, res, next) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const file = req.file;
-    const dir = './src/images/'
-    const filename = req.params.id ? req.params.id + '_pfp.webp' : new Date().getTime() + '_pfp.webp';
-    const outputPath = path.join(dir, filename);
+    // Compress the image and convert it to WebP format
+    const compressedBuffer = await sharp(req.file.buffer)
+      .resize({ width: 800 }) // Resize if needed, adjust as required
+      .webp({ quality: 80 }) // Set quality for compression
+      .toBuffer();
 
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
+    // Convert the compressed buffer to Base64
+    const base64Image = compressedBuffer.toString('base64');
+    const mimeType = 'image/webp'; // Since we are converting to WebP
 
-    await sharp(file.buffer)
-      .webp()
-      .toFile(outputPath);
+    // Create a full Base64 string
+    const base64String = `data:${mimeType};base64,${base64Image}`;
 
-    req.filename = filename;
-    
+    // Attach the Base64 string to req.filename
+    req.filename = base64String;
+
+    // Call the next middleware
     next();
   } catch (err) {
     return res.status(500).json({ error: err.message });

@@ -69,8 +69,14 @@ export const verifyJWT = async (req, res) => {
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
         console.log(decoded)
         req.user = decoded;
-        res.status(200).json({ message: "Token is valid", success: true });
+        const user = await Student.findById(decoded._id)
+        const userWithImage = {
+            ...user._doc,
+            image: user.pfp
+        }
+        res.status(200).json({ message: "Token is valid", success: true, user: userWithImage });
     } catch (error) {
+        console.log(error)
         res.status(401).json({ message: "Unauthorized", success: false });
     }
 }

@@ -27,6 +27,10 @@ const vehicleSchema = new Schema({
         type: Boolean,
         default: false,
     },
+    image: {
+        type: String,
+        required: true,
+    }
 }); 
 
 vehicleSchema.plugin(mongoosePaginate);

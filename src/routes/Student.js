@@ -1,5 +1,5 @@
 import express from "express";
-import { createStudent, deleteStudent, updateStudent } from "../controllers/mutation/student.mutation.js";
+import { createStudent, deleteStudent, updatePassword, updatePfp, updateStudent } from "../controllers/mutation/student.mutation.js";
 import { getStudent, verifyJWT, getStudents, loginStudent, getSelf } from "../controllers/query/student.query.js";
 import parseCOR from "../middleware/parseCOR.js";
 import { processImage, uploadSingleImage } from "../middleware/uploadImage.js";
@@ -19,5 +19,7 @@ studentRouter.get('/student/:id', getStudent)
 studentRouter.get('/self', studentAuth, getSelf)
 
 studentRouter.post('/cor', parseCOR)
+studentRouter.put('/pfp/:id', uploadSingleImage, processImage, updatePfp)
+studentRouter.put('/password/:id', updatePassword)
 
 export default studentRouter;

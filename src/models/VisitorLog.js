@@ -1,26 +1,9 @@
 import { Schema, model } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
 
-const nameSchema = new Schema({
-    first: {
-        type: String,
-        required: true,
-    },
-    last: {
-        type: String,
-        required: true,
-    },
-    middle: {
-        type: String,
-    },
-    suffix: {
-        type: String,
-    },
-});
-
 const visitorLogSchema = new Schema({
     name: {
-        type: nameSchema,
+        type: String,
         required: true,
     },
     timeIn : {
@@ -31,16 +14,26 @@ const visitorLogSchema = new Schema({
     timeOut : {
         type: Date,
     },
+    agency: {
+        type: String
+    },
+    address: {
+        type: String
+    },
+    personToVisit: {
+        type: String
+    },
+    number: {
+        type: String
+    },
     purpose: {
         type: String,
         required: true,
     },
-    vehicle: {
+    picture: {
         type: String,
-    },
-    plateNumber: {
-        type: String,
-    },
+        required: true
+    }, 
     visitorCardID: {
         type: String,
         required: true,

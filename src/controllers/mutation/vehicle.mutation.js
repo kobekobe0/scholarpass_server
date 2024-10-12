@@ -5,16 +5,20 @@ import Vehicle from "../../models/Vehicle.js";
 export const createVehicle = async (req, res) => {
     const {_id} = req.user;
     const { plateNumber, model, color, type } = req.body;
+    const img = `${req.filename}`;
+
+    if(!img) return res.status(400).json({ message: "Image is required" });
     try {
         const newVehicle = await Vehicle.create({
             plateNumber,
             model,
             color,
             type,
-            studentID: _id
+            studentID: _id,
+            image: img
         });
         if (newVehicle) {
-            await createSystemLog("CREATE", "VEHICLE", newVehicle._id, "Vehicle", `Vehicle ${newVehicle.plateNumber} created`, null);
+            await createSystemLog("CREATE", "VEHICLE", newVehicle._id, "Student", `Vehicle with ${newVehicle.plateNumber} plate number created`, null);
             return res.status(201).json(newVehicle);
         }
         return res.status(400).json({ message: "Failed to create vehicle" });
@@ -26,6 +30,7 @@ export const createVehicle = async (req, res) => {
 export const updateVehicle = async (req, res) => {
     const { id } = req.params;
     const { plateNumber, model, color, type } = req.body;
+
     try {
         const updatedVehicle = await Vehicle.findByIdAndUpdate(id, {
             plateNumber,

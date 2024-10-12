@@ -10,6 +10,10 @@ const violationLogSchema = new Schema({
         type: String,
         required: true,
     }],
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
 }); 
 
 violationLogSchema.plugin(mongoosePaginate);

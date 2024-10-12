@@ -1,4 +1,4 @@
-import StudentLog from '../../models/studentLog.js';
+import StudentLog from '../../models/StudentLog.js';
 import ViolationLog from '../../models/ViolationLog.js';
 import VisitorQR from '../../models/VisitorQR.js';
 import VisitorLog from '../../models/VisitorLog.js';
@@ -32,7 +32,7 @@ const createStudentLog = async (student) => {
             violationID: newViolation._id,
             vehicle: student?.vehicle
         }
-
+    //TODO: create student entry log also
     } else {
         studentLog = {
             studentID: student.studentID,

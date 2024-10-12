@@ -44,6 +44,10 @@ const studentSchema = new Schema({
         type: String,
         required: true,
     },
+    lastPfpUpdate: {
+        type: Date,
+        default: Date.now,
+    }
 });
 
 // Add the pagination plugin to the schema

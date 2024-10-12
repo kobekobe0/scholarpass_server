@@ -1,11 +1,15 @@
 import express from "express";
 import { checkVisitorQR, logStudent, logVisitor } from "../controllers/mutation/studentEntry.mutation.js";
+import { getStudentLogs, getStudentViolation } from "../controllers/query/studentLogs.query.js";
 
-const studentLog = express.Router();
+const studentLogRouter = express.Router();
 
 //TODO: Add security guard validation
-studentLog.post('/student', logStudent)
-studentLog.post('/visitor/:id', checkVisitorQR)
-studentLog.post('/visitor', logVisitor)
+studentLogRouter.post('/student', logStudent)
+studentLogRouter.post('/visitor/:id', checkVisitorQR)
+studentLogRouter.post('/visitor', logVisitor)
 
-export default studentLog;
+studentLogRouter.get('/student/:id', getStudentLogs)
+studentLogRouter.get('/violation/:id', getStudentViolation)
+
+export default studentLogRouter;

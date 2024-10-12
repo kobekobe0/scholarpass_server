@@ -4,7 +4,7 @@ import connectToMongoDB from "./config/database.js";
 import cors from "cors";
 import createSocketServer from "./config/socket.js";
 
-import path,  { dirname } from 'path';
+import path from 'path';
 import { fileURLToPath } from 'url';
 import { sanitizeObjectWithTrimMiddleware } from "./helper/sanitizeData.js";
 import { exec } from "child_process";
@@ -13,11 +13,16 @@ import mongoose from "mongoose";
 import studentRouter from "./routes/Student.js";
 import vehicleRouter from "./routes/Vehicle.js";
 import resetPasswordRouter from "./routes/ResetPassword.js";
-import studentLog from "./routes/StudentLog.js";
+import studentLogRouter from "./routes/StudentLog.js";
 import securityGuardRouter from "./routes/SecurityGuard.js";
+import studentStatisticsRouter from "./routes/StudentStatistics.js";
+import cardRouter from "./routes/Card.js";
+import cardRequestRouter from "./routes/CardRequest.js";
+import adminRouter from "./routes/Admin.js";
+import createDefaultAdmin from "./helper/createAdmin.js";
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = path.dirname(__filename);
 
 
 dotenv.config();
@@ -48,7 +53,10 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-app.use('/images', express.static(path.join(__dirname)));
+app.use('/cards', express.static(path.join(__dirname, 'cards')));
+app.use('/vehicle', express.static(path.join(__dirname, 'vehicle')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
+
 
 const io = createSocketServer(app, port);
 
@@ -67,10 +75,14 @@ app.get("/", (req, res) => {
 app.use(sanitizeObjectWithTrimMiddleware)
 
 app.use("/api/student", studentRouter)
+app.use("/api/admin", adminRouter)
 app.use("/api/vehicle", vehicleRouter)
 app.use("/api/reset-password", resetPasswordRouter)
-app.use("/api/log", studentLog)
+app.use("/api/log", studentLogRouter)
 app.use("/api/guard", securityGuardRouter)
+app.use("/api/student-statistic", studentStatisticsRouter)
+app.use("/api/cards", cardRouter)
+app.use("/api/card-request", cardRequestRouter)
 
 //shutdown
 app.post('/api/shutdown', (req, res) => {
@@ -88,6 +100,8 @@ app.post('/api/shutdown', (req, res) => {
         return res.status(500).json({ message: 'Failed to shut down server' });
     }
 });
+
+createDefaultAdmin();
 
 app.post('/api/backup', async (req, res) => {
     try {

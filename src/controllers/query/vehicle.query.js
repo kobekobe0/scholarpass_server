@@ -40,6 +40,10 @@ export const getStudentVehicles = async (req, res) => {
 
     try {
         const vehicles = await Vehicle.find({ studentID: id });
+        const vehiclesWithImages = vehicles.map(vehicle => ({
+            ...vehicle._doc,
+            image: process.env.SERVER_URL + '/' + vehicle.image.replace(/ /g, '%20'),
+        }));
         res.status(200).json(vehicles);
     }
     catch (error) {

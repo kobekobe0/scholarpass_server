@@ -2,10 +2,10 @@ import express from "express";
 import { createVehicle, deleteVehicle, updateVehicle } from "../controllers/mutation/vehicle.mutation.js";
 import { studentAuth } from "../middleware/studentAuth.js";
 import { getStudentVehicles, getVehicle, getVehicles } from "../controllers/query/vehicle.query.js";
-
+import { uploadSingleImage, processImage } from "../middleware/uploadVehicle.js";
 const vehicleRouter = express.Router();
 
-vehicleRouter.post('/create', studentAuth, createVehicle);
+vehicleRouter.post('/create', studentAuth, uploadSingleImage, processImage, createVehicle);
 vehicleRouter.put('/update/:id', studentAuth, updateVehicle);
 vehicleRouter.delete('/delete/:id', studentAuth, deleteVehicle);
 
