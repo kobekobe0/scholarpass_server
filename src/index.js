@@ -45,6 +45,7 @@ const corsOptions = {
         "http://localhost:5173/",
         "http://192.168.1.242",
         "https://scholarpass-igc8prhnm-kobekobe0s-projects.vercel.app/",
+        'https://scholarpass-igc8prhnm-kobekobe0s-projects.vercel.app',
 	    "*"
     ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
