@@ -5,6 +5,7 @@ import VisitorLog from '../../models/VisitorLog.js';
 import { io } from '../../index.js';
 
 const createStudentLog = async (studentID, vehicleID) => {
+    const today = new Date();
     const newLog = await StudentLog.create({
         studentID,
         vehicle: vehicleID || null,
@@ -136,5 +137,53 @@ export const logViolation = async (req, res) => {
         return res.status(200).json({ violation: newViolation });
     } catch (error) {
         return res.status(500).json({ message: "Failed to log violation", error: error.message });
+    }
+}
+
+
+export const getStatisticsToday = async (req, res) => {
+    //total logs with unique students
+    //total logs with vehicles used unique vehicles
+    //total visitors
+
+    try {
+        const today = new Date();
+        const logs = await StudentLog.find({ logDate: new Date(today.getFullYear(), today.getMonth(), today.getDate()) }).select('studentID vehicle');
+        const uniqueStudents = new Set();
+        const uniqueVehicles = new Set();
+        for(let log of logs) {
+            uniqueStudents.add(log.studentID);
+            if(log.vehicle) uniqueVehicles.add(log.vehicle);
+        }
+
+        const totalVisitors = await VisitorLog.countDocuments({ logDate: new Date(today.getFullYear(), today.getMonth(), today.getDate()) });
+
+        return res.status(200).json({ totalLogs: logs.length, uniqueStudents: uniqueStudents.size, uniqueVehicles: uniqueVehicles.size, totalVisitors });
+    } catch (error) {
+        return res.status(500).json({ message: "Failed to get statistics", error: error.message });
+    }
+}
+
+export const getRecentLogs = async (req, res) => {
+    //accept number of logs to return
+    const { limit } = req.query;
+
+    try {
+        const logs = await StudentLog.find().populate('studentID', 'name department').populate('vehicle', 'model').sort({timeIn: -1}).limit(parseInt(limit));
+        return res.status(200).json(logs);
+    } catch (error) {
+        return res.status(500).json({ message: "Failed to get recent logs", error: error.message });
+    }
+}
+
+export const getRecentVisitors = async (req, res) => {
+    //accept number of logs to return
+    const { limit } = req.query;
+
+    try {
+        const logs = await VisitorLog.find().sort({timeIn: -1}).limit(parseInt(limit));
+        return res.status(200).json(logs);
+    } catch (error) {
+        return res.status(500).json({ message: "Failed to get recent visitors", error: error.message });
     }
 }

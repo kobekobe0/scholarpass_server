@@ -7,22 +7,32 @@ import jwt from 'jsonwebtoken';
 export const getStudents = async (req, res) => {
     const { page, limit, department, search } = req.query;
 
+    // Construct the query
     const query = {
         deleted: false,
+        ...(search && { name: new RegExp(search, 'i') }), // Make sure search is correctly formatted
         ...(department && { department })
     };
 
+    // Pagination options
     const options = {
         page: parseInt(page, 10) || 1,
         limit: parseInt(limit, 10) || 100,
-        sort: { "name.last": 1 }, 
-        select: '-deleted'        
+        sort: { "name": 1 },
+        select: '-deleted -password -__v -completeRegistration -lastPfpUpdate -schedule -email -cellphone',
     };
 
+    console.log('Query:', query); // Log the constructed query for debugging
+
     try {
-        const students = await paginate(Student, query, options, search);
+        const students = await paginate(Student, query, options);
+        
+        // Log the students returned for debugging
+        console.log('Students found:', students);
+
         res.status(200).json(students);
     } catch (error) {
+        console.error('Error fetching students:', error); // Log the error for debugging
         res.status(500).json({ message: "Error fetching students", error: error.message });
     }
 };
@@ -31,7 +41,7 @@ export const getStudent = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const student = await Student.findById(id).select('name _id schedul email cellphone studentNumber department');
+        const student = await Student.findById(id).select('-password -__v -deleted -completeRegistration -lastPfpUpdate');
         if (!student) {
             return res.status(404).json({ message: "Student not found" });
         }

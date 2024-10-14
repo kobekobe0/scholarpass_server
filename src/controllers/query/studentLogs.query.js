@@ -3,9 +3,11 @@ import ViolationLog from "../../models/ViolationLog.js";
 import Vehicle from "../../models/Vehicle.js";
 import Student from "../../models/Student.js";
 import VisitorQR from "../../models/VisitorQR.js";
+import paginate from "../../helper/paginate.js";
 
 export const getStudentLogs = async (req, res) => {
     const {id} = req.params
+
     try {
         const logs = await StudentLog.find({studentID: id}).populate('studentID', 'name studentNumber').populate('vehicle', 'model').sort({timeIn: -1})
         return res.status(200).json(logs)
@@ -61,3 +63,139 @@ export const getVisitorForLogging = async (req, res) => {
         return res.status(500).json({error, message: 'getVisitorForLogging'})
     }
 }
+
+
+export const getCurrentDayLogsGroupedByTimeIn = async (req, res) => {
+    const today = new Date();
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 6, 0, 0);
+    const end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 20, 0, 0);
+
+    const timeSlots = [];
+    for (let hour = 6; hour < 20; hour++) {
+        timeSlots.push({ hour, minute: 0 });
+        timeSlots.push({ hour, minute: 30 });
+    }
+
+    try {
+        const logs = await StudentLog.aggregate([
+            {
+                $match: {
+                    timeIn: { $gte: start, $lt: end }
+                }
+            },
+            {
+                $project: {
+                    timeIn: {
+                        $dateToString: {
+                            format: "%H:%M",
+                            date: "$timeIn",
+                            timezone: "Asia/Manila"  // Make sure the time is formatted based on Manila timezone
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    hour: { $toInt: { $substr: ["$timeIn", 0, 2] } },  // Extract hour
+                    minute: { $toInt: { $substr: ["$timeIn", 3, 2] } }  // Extract minute
+                }
+            },
+            {
+                $project: {
+                    hour: 1,
+                    timeSlot: {
+                        $cond: [
+                            { $lt: ["$minute", 30] },  // If the minute is less than 30, group in the first half
+                            0,                         // 0 for :00-:29
+                            30                         // 30 for :30-:59
+                        ]
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        hour: "$hour",
+                        minute: "$timeSlot"
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: {
+                    "_id.hour": 1,
+                    "_id.minute": 1
+                }
+            }
+        ]);
+
+        // Create a map from logs for quick lookup
+        const logMap = new Map();
+        logs.forEach(log => {
+            const key = `${log._id.hour}:${log._id.minute}`;
+            logMap.set(key, log.count);
+        });
+
+        // Combine the generated time slots with the log data
+        const finalLogs = timeSlots.map(slot => {
+            const key = `${slot.hour}:${slot.minute}`;
+            return {
+                hour: slot.hour,
+                minute: slot.minute,
+                count: logMap.get(key) || 0  // Use 0 if no logs found for this time slot
+            };
+        });
+
+        return res.status(200).json(finalLogs);
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error, message: 'getCurrentDayLogsGroupedByTimeIn' });
+    }
+};
+
+export const getLogs = async (req, res) => {
+    const { limit = 100, page = 1, studentName = '', from = '', to = '' } = req.query;
+
+    try {
+        const totalDocs = await StudentLog.countDocuments();
+        const totalPages = Math.ceil(totalDocs / limit);
+        
+        // Prepare filters based on the request query
+        const studentNameFilter = studentName
+            ? { 'name': { $regex: studentName, $options: 'i' } }
+            : {};
+        
+        // Prepare date range filter
+        const dateFilter = {};
+        if (from) {
+            dateFilter['$gte'] = new Date(from); // Filter for dates greater than or equal to 'from'
+        }
+        if (to) {
+            dateFilter['$lte'] = new Date(to); // Filter for dates less than or equal to 'to'
+        }
+        
+        // Modify the logs query with the date filter
+        const logs = await StudentLog.find({
+            ...(from || to ? { logDate: dateFilter } : {}), // Apply date range filter if 'from' or 'to' is provided
+        })
+            .populate({
+                path: 'studentID',
+                select: 'name studentNumber department',
+                match: studentNameFilter 
+            })
+            .populate('vehicle', 'model')
+            .sort({ timeIn: -1 })
+            .limit(parseInt(limit)) 
+            .skip((parseInt(page) - 1) * limit);
+
+        // Filter out logs where the studentID population returned null (no match for studentName)
+        const filteredLogs = logs.filter(log => log.studentID !== null);
+
+        // Return totalPages, totalDocs, docs
+        return res.status(200).json({ totalPages, totalDocs, docs: filteredLogs });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error, message: 'getLogs' });
+    }
+};

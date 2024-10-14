@@ -43,6 +43,10 @@ const paginate = async (model, query = {}, options = {}, search = '') => {
                 query.plateNumber = { $regex: new RegExp(search, 'i') }; // Case-insensitive search
                 break;
 
+            case 'StudentLog': 
+                query.studentNumber = { $regex: new RegExp(search, 'i') }; // Case-insensitive search
+                break;
+
             default:
                 // Handle other models or ignore search
                 break;

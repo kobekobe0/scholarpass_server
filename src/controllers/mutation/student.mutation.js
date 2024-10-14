@@ -31,7 +31,15 @@ export const createStudent = async (req, res) => {
             studentNumber: student.studentNumber,
             department: student.department,
             password: hashedPassword,
-            pfp: pfpPath
+            pfp: pfpPath,
+            degree: student.degree,
+            section: student.section,
+            yearLevel: student.yearLevel,
+            SY: {
+                start: student.start,
+                end: student.end,
+                semester: student.semester
+            }
         });
 
         if(newStudent){
