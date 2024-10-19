@@ -4,6 +4,7 @@ import PDFParser from 'pdf2json';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { start } from 'repl';
+import Config from "../models/Config.js"
 
 // Get the directory name
 const __filename = fileURLToPath(import.meta.url);
@@ -69,8 +70,8 @@ function parseStudentInfo(dataArray) {
         if (semesterMatch) {
             SY = {
                 semester: semesterMatch[1],
-                start: semesterMatch[2],
-                end: semesterMatch[3]
+                start: parseInt(semesterMatch[2]),
+                end: parseInt(semesterMatch[3])
             };
         }
 
@@ -150,6 +151,14 @@ const handleRequest = async (req, res) => {
         const schedules = groupSchedules(extractScheduleBlock(texts));
 
         const otherDetails = parseStudentInfo(texts.slice(22, 29))
+
+        const config = await Config.find();
+        if(config[0].SY.start !== otherDetails.SY.start || config[0].SY.end !== otherDetails.SY.end || config[0].SY.semester !== otherDetails.SY.semester){
+            console.log('Invlid SY encodings')
+            return res.status(400).json({
+                message: 'COR is not for the current semester. Please upload a COR for the current semester.',
+            });
+        }
         details = {...details, ...otherDetails}
         responseSent = true;
         deleteFile(filePath);

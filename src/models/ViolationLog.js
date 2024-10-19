@@ -10,6 +10,15 @@ const violationLogSchema = new Schema({
         type: String,
         required: true,
     },
+    severity: {
+        type: String,
+        enum: ["MINOR", "MAJOR", "SEVERE"],
+        required: true
+    },
+    current: {
+        type: Boolean,
+        default: true
+    },
     createdAt: {
         type: Date,
         default: Date.now

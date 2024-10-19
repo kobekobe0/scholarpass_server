@@ -13,10 +13,10 @@ export const getAdmins = async (req, res) => {
 }
 
 export const getAdmin = async (req, res) => {
-    const { id } = req.params;
+    const { _id } = req.user;
 
     try {
-        const admin = await Admin.findById(id);
+        const admin = await Admin.findById(_id).select('-password');
         if (!admin) {
             return res.status(404).json({ message: "Admin not found" });
         }

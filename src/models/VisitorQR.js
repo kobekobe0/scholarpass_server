@@ -9,7 +9,15 @@ const visitorQRSchema = new Schema({
     inUse: {
         type: Boolean,
         default: false
-    }
+    },
+    valid: {
+        type: Boolean,
+        default: true
+    },
+    deleted: {
+        type: Boolean,
+        default: false
+    },
 }); 
 
 visitorQRSchema.plugin(mongoosePaginate);

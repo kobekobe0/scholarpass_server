@@ -173,3 +173,43 @@ export const updatePassword = async (req, res) => {
         return res.status(500).json({ message: 'Failed to update password' });
     }
 }
+
+
+export const updatePfpByAdmin = async (req, res) => {
+    const { id } = req.params;
+    const pfpPath = `${req.filename}`;
+    try {
+        const student = await Student.findById(id);
+        if (!student) return res.status(404).json({ message: 'Student not found' });
+        student.pfp = pfpPath;
+        await student.save();
+
+        await createSystemLog('UPDATE', 'Student', student._id, 'Student', 'Profile picture updated by admin', null);
+        return res.status(200).json({ message: 'Profile picture updated successfully' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Failed to update profile picture' });
+    }
+}
+
+export const updatePasswordByAdmin = async (req, res) => {
+    const { id } = req.params;
+    const { newPassword } = req.body;
+
+    console.log(newPassword)
+
+    try {
+        console.log("updating password")
+        const student = await Student.findById(id);
+        if(!student)return res.status(404).json({ message: 'Student not found' });
+        const hashedPassword = await bcrypt.hash(newPassword, 12);
+        student.password = hashedPassword;
+        const updatedStudent = await student.save();
+
+        if(updatedStudent)return res.status(200).json({ message: 'Password updated successfully' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Failed to update password' });
+    }
+
+}

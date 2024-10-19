@@ -11,8 +11,6 @@ export const createCard = async (req, res) => {
             name: card.name,
             displayImage: displayImage,
             templateImage: templateImage,
-            price: card.price,
-            material: card.material
         });
 
         return res.status(201).json({ message: 'Card created successfully' });
@@ -78,12 +76,12 @@ export const toggleCardActive = async (req, res) => {
 
 export const deleteCard = async (req, res) => {
     const { id } = req.params;
-
-    try {
-        const deletedCard = await Card.findByIdAndUpdate(id, { deleted: true }, { new: true });
+    try{
+        const deletedCard = await Card.findByIdAndDelete(id);
         if(!deletedCard) return res.status(400).json({ message: 'Failed to delete card' });
+
         return res.status(200).json({ message: 'Card deleted successfully' });
-    } catch (error) {
+    } catch(error){
         console.error(error);
         return res.status(500).json({ message: 'Failed to delete card' });
     }

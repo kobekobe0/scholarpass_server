@@ -2,11 +2,11 @@ import { Schema, model } from "mongoose";
 
 const SYSchema = new Schema({
     start: {
-        type: Date,
+        type: Number,
         required: true
     },
     end: {
-        type: Date,
+        type: Number,
         required: true
     },
     semester: {

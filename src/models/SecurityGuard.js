@@ -33,6 +33,10 @@ const SecurityGuardSchema = new Schema({
     active: {
         type: Boolean,
         default: true,
+    },
+    deleted: {
+        type: Boolean,
+        default: false,
     }
 }); 
 

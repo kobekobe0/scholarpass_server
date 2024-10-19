@@ -21,6 +21,12 @@ import cardRequestRouter from "./routes/CardRequest.js";
 import adminRouter from "./routes/Admin.js";
 import createDefaultAdmin from "./helper/createAdmin.js";
 
+import {createDefaultConfig} from "./helper/createDefaultConfig.js";
+import configRouter from "./routes/Config.js";
+import violationLogRouter from "./routes/ViolationLog.js";
+import visitorRouter from "./routes/Visitor.js";
+import qrRouter from "./routes/GenerateQR.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -87,6 +93,12 @@ app.use("/api/guard", securityGuardRouter)
 app.use("/api/student-statistic", studentStatisticsRouter)
 app.use("/api/cards", cardRouter)
 app.use("/api/card-request", cardRequestRouter)
+app.use('/api/config', configRouter );
+app.use('/api/violation', violationLogRouter );
+app.use('/api/visitor', visitorRouter)
+app.use('/api/qr', qrRouter)
+
+createDefaultConfig();
 
 //shutdown
 app.post('/api/shutdown', (req, res) => {

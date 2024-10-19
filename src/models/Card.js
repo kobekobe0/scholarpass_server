@@ -13,15 +13,7 @@ const cardSchema = new Schema({
     templateImage: {
         type: String,
         required: true,
-    },
-    price: {
-        type: Number,
-        required: true,
-    },
-    material: {
-        type: String,
-        required: true,
-    },
+    }, 
     deleted: {
         type: Boolean,
         default: false,
@@ -29,6 +21,10 @@ const cardSchema = new Schema({
     active: {
         type: Boolean,
         default: true,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
     },
 });
 

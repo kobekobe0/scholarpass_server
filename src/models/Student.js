@@ -3,11 +3,11 @@ import mongoosePaginate from "mongoose-paginate-v2";
 
 const SYSchema = new Schema({
     start: {
-        type: Date,
+        type: Number,
         required: true
     },
     end: {
-        type: Date,
+        type: Number,
         required: true
     },
     semester: {
@@ -78,6 +78,11 @@ const studentSchema = new Schema({
     SY: {
         type: SYSchema,
         required: true,
+    },
+    valid: {
+        type: Boolean,
+        required: true,
+        default: true,
     }
 });
 

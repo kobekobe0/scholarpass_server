@@ -6,17 +6,29 @@ import VisitorQR from "../../models/VisitorQR.js";
 import paginate from "../../helper/paginate.js";
 
 export const getStudentLogs = async (req, res) => {
-    const {id} = req.params
+    const { id } = req.params;
+    const { page = 1, limit = 100, startDate, endDate, search = '' } = req.query;
 
     try {
-        const logs = await StudentLog.find({studentID: id}).populate('studentID', 'name studentNumber').populate('vehicle', 'model').sort({timeIn: -1})
-        return res.status(200).json(logs)
-    } catch(error) {
-        console.log(error)
-        return res.status(500).json({error, message: 'getStudentLogs'})
-    }
-} 
+        let query = { studentID: id };
 
+        if (startDate && endDate) {
+            query.logDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
+        } else if (startDate) {
+            query.logDate = { $gte: new Date(startDate) };
+        } else if (endDate) {
+            query.logDate = { $lte: new Date(endDate) };
+        }
+
+        // Call the paginate function with model, query, and pagination options
+        const logs = await paginate(StudentLog, query, { page, limit, sort: { timeIn: -1 } }, search);
+
+        return res.status(200).json(logs);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error, message: 'Failed to fetch student logs' });
+    }
+};
 export const getStudentViolation = async (req, res) => {
     const {id} = req.params
     try {
@@ -47,23 +59,6 @@ export const getStudentForLogging = async (req, res) => {
         return res.status(500).json({error, message: 'getStudentForLogging'})
     }
 }
-
-export const getVisitorForLogging = async (req, res) => {
-    const {visitorCardID} = req.params // qrCode
-
-    try{
-        const visitorCard = await VisitorQR.findOne({visitorCardID})
-
-        if(!visitorCard) return res.status(404).json({message: 'Visitor not found'})
-        
-        return res.status(200).json({visitorCard})
-
-    } catch (error) {
-        console.log(error)
-        return res.status(500).json({error, message: 'getVisitorForLogging'})
-    }
-}
-
 
 export const getCurrentDayLogsGroupedByTimeIn = async (req, res) => {
     const today = new Date();
@@ -199,3 +194,19 @@ export const getLogs = async (req, res) => {
         return res.status(500).json({ error, message: 'getLogs' });
     }
 };
+
+export const getVisitorForLogging = async (req, res) => {
+    const {visitorCardID} = req.params // qrCode
+
+    try{
+        const visitorCard = await VisitorQR.findOne({visitorCardID})
+
+        if(!visitorCard) return res.status(404).json({message: 'Visitor not found'})
+        
+        return res.status(200).json({visitorCard})
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({error, message: 'getVisitorForLogging'})
+    }
+}

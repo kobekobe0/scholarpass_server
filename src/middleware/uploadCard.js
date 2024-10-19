@@ -16,6 +16,7 @@ const processImage = async (req, res, next) => {
 
     // Check if the files array is present and has the correct length
     if (!req.files || req.files.length !== 2) {
+      console.log('Expecting 2 files: displayImage and templateImage');
       return res.status(400).json({ error: 'Expecting 2 files: displayImage and templateImage' });
     }
 

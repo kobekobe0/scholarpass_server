@@ -6,10 +6,10 @@ import bcrypt from "bcryptjs";
 export const loginSecurityGuard = async (req, res) => {
     const {username, password} = req.body;
     try{
-        const securityGuard = await SecurityGuard.findOne({username});
+        const securityGuard = await SecurityGuard.findOne({username, deleted: false});
         if(!securityGuard) return res.status(404).json({message: "Security Guard not found"});
         if(!securityGuard.active) return res.status(401).json({message: "Account is inactive"});
-
+        
         const isMatch = await bcrypt.compare(password, securityGuard.password);
         if(!isMatch) return res.status(401).json({message: "Invalid credentials"});
             

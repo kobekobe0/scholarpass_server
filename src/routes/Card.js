@@ -14,4 +14,6 @@ cardRouter.put('/delete/:id', adminAuth, deleteCard);
 cardRouter.get('/available', getAvailableCards)
 cardRouter.get('/all', adminAuth, getAllCards);
 
+cardRouter.delete('/:id', adminAuth, deleteCard)
+
 export default cardRouter;
