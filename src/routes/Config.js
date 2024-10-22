@@ -5,7 +5,7 @@ import { addViolation, deleteViolation, updateSY, updateViolation } from '../con
 
 const configRouter = express.Router();
 
-configRouter.get('/', adminAuth, getConfig);
+configRouter.get('/', getConfig);
 
 configRouter.put('/sy', adminAuth, updateSY)
 

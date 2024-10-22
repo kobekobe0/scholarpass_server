@@ -16,6 +16,4 @@ visitorRouter.post('/log', logVisitor)
 visitorRouter.get('/logs', adminAuth, getVisitorLogs)
 visitorRouter.get('/qr/history/:id', getVisitorLogByCardID)
 
-
-
 export default visitorRouter;
