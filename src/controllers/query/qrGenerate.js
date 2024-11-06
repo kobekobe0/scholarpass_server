@@ -185,6 +185,8 @@ export const qrGenerateStudent = async (req, res) => {
 
         const stringData = JSON.stringify(qrData);
 
+        console.log("DATA TO PUT: ", qrData)
+
         const encryptedData = encryptObject(stringData);
 
         // Create the QR code buffer with student number
@@ -215,13 +217,13 @@ export const qrGenerateStudent = async (req, res) => {
             .composite([{
                 input: Buffer.from(
                     `<svg width="500" height="150">
-                        <text x="50%" y="40%" font-weight="bold" font-size="30" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="middle" font-family="Open Sans">
+                        <text x="50%" y="40%" font-weight="bold" font-size="30" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="middle" font-family="Helvetica">
                             ${student.name}
                         </text>
-                        <text x="50%" y="85" font-size="15" text-anchor="middle" fill="rgb(15, 15, 15, 90)" dominant-baseline="middle" font-family="Verdana">
+                        <text x="50%" y="85" font-size="15" font-weight="medium" text-anchor="middle" fill="rgb(15, 15, 15, 90)" dominant-baseline="middle" font-family="Gill Sans">
                             ${student.studentNumber}
                         </text>
-                        <text x="50%" y="110" font-size="20" text-anchor="middle" fill="rgb(15, 15, 15, 80)" dominant-baseline="middle" font-family="Verdana">
+                        <text x="50%" y="110" font-size="20" text-anchor="middle" fill="rgb(15, 15, 15, 80)" dominant-baseline="middle" font-family="Gill Sans">
                             ${vehicleModel ? vehicleModel : ""}
                         </text>
                     </svg>`
