@@ -1,6 +1,6 @@
 import express from "express";
 import { checkVisitorQR, createVisitorQR, getRecentLogs, getRecentVisitors, getStatisticsToday, logStudent, logViolation, logVisitor } from "../controllers/mutation/studentEntry.mutation.js";
-import { getCurrentDayLogsGroupedByTimeIn, getLogs, getStudentForLogging, getStudentLogs, getStudentViolation, getVisitorForLogging } from "../controllers/query/studentLogs.query.js";
+import { getCurrentDayLogsGroupedByTimeIn, getCurrentNumberOfVehicleInside, getLogs, getStudentForLogging, getStudentLogs, getStudentViolation, getVisitorForLogging } from "../controllers/query/studentLogs.query.js";
 import { adminAuth } from "../middleware/adminAuth.js";
 
 const studentLogRouter = express.Router();
@@ -26,4 +26,6 @@ studentLogRouter.get('/recent-visitor', getRecentVisitors)
 studentLogRouter.post('/log-trend', getCurrentDayLogsGroupedByTimeIn)
 
 studentLogRouter.get('/logs', getLogs)
+
+studentLogRouter.get('/vehicle-number', getCurrentNumberOfVehicleInside)
 export default studentLogRouter;

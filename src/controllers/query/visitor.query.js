@@ -58,10 +58,15 @@ export const getVisitorQR = async (req, res) => {
 }
 
 export const getVisitorLogs = async (req, res) => {
-    const { name, fromDate, toDate, page = 1, limit = 100 } = req.query;
+    const { name, fromDate, toDate, page = 1, limit = 100, visitorCardID = null } = req.query;
 
     try {
         let query = {};
+
+        if (visitorCardID) {
+            query.visitorCardID = visitorCardID;
+        }
+
 
         if (fromDate && toDate) {
             query.timeIn = { $gte: new Date(fromDate), $lte: new Date(toDate) };
@@ -78,7 +83,8 @@ export const getVisitorLogs = async (req, res) => {
         const visitorLogs = await VisitorLog.find(query)
             .sort({ timeIn: -1 })
             .skip((page - 1) * limit) 
-            .limit(parseInt(limit));  
+            .limit(parseInt(limit))
+            .populate('visitorCardID', 'cardNumber _id');  
         
         const totalVisitorLogs = await VisitorLog.countDocuments(query);
         

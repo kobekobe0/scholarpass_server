@@ -210,3 +210,25 @@ export const getVisitorForLogging = async (req, res) => {
         return res.status(500).json({error, message: 'getVisitorForLogging'})
     }
 }
+
+export const getCurrentNumberOfVehicleInside = async (req, res) => {
+    try {
+        const startOfTheDay = new Date();
+        startOfTheDay.setHours(0, 0, 0, 0);
+
+        const logsWithVehicle = await StudentLog.find({
+            timeIn: {
+                $gte: startOfTheDay
+            },
+            timeOut: {
+                $eq: null
+            },
+            vehicle: { $ne: null }
+        }).countDocuments();
+
+        return res.status(200).json({ count: logsWithVehicle });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error, message: 'getCurrentNumberOfVehicleInside' });
+    }
+}
