@@ -83,10 +83,10 @@ export const qrGenerateVisitor = async (req, res) => {
                 .composite([{
                     input: Buffer.from(
                         `<svg width="500" height="150">
-                            <text x="50%" y="50%" font-weight="semibold" font-size="30" text-anchor="middle" fill="rgb(15, 15, 15, 90)" dominant-baseline="middle" font-family="Verdana">
+                            <text x="50%" y="50%" font-weight="semibold" font-size="30" text-anchor="middle" fill="rgb(15, 15, 15, 90)" dominant-baseline="middle">
                                 Visitor Pass
                             </text>
-                            <text x="50%" y="100" font-size="20" text-anchor="middle" fill="rgb(15, 15, 15, 90)" dominant-baseline="middle" font-family="Verdana">
+                            <text x="50%" y="100" font-size="20" text-anchor="middle" fill="rgb(15, 15, 15, 90)" dominant-baseline="middle">
                                 ${detail.cardNumber}
                             </text>
                         </svg>`
@@ -172,7 +172,7 @@ export const qrGenerateStudent = async (req, res) => {
         // Fetch vehicle details if vehicleID is provided
         let vehicleModel = '';
         if (vehicleID) {
-            const vehicle = await Vehicle.findById(vehicleID).select('model');
+            const vehicle = await Vehicle.findOne({_id: vehicleID, deleted: false}).select('model');
             if (vehicle) {
                 vehicleModel = vehicle.model;
             }
@@ -217,13 +217,13 @@ export const qrGenerateStudent = async (req, res) => {
             .composite([{
                 input: Buffer.from(
                     `<svg width="500" height="150">
-                        <text x="50%" y="40%" font-weight="bold" font-size="30" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="middle" font-family="Helvetica">
+                        <text x="50%" y="40%" font-weight="bold" font-size="30" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="middle">
                             ${student.name}
                         </text>
-                        <text x="50%" y="85" font-size="15" font-weight="medium" text-anchor="middle" fill="rgb(15, 15, 15, 90)" dominant-baseline="middle" font-family="Gill Sans">
+                        <text x="50%" y="85" font-size="15" font-weight="medium" text-anchor="middle" fill="rgb(15, 15, 15, 90)" dominant-baseline="middle" >
                             ${student.studentNumber}
                         </text>
-                        <text x="50%" y="110" font-size="20" text-anchor="middle" fill="rgb(15, 15, 15, 80)" dominant-baseline="middle" font-family="Gill Sans">
+                        <text x="50%" y="110" font-size="20" text-anchor="middle" fill="rgb(15, 15, 15, 80)" dominant-baseline="middle">
                             ${vehicleModel ? vehicleModel : ""}
                         </text>
                     </svg>`

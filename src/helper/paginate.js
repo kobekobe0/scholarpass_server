@@ -1,14 +1,3 @@
-import mongoosePaginate from "mongoose-paginate-v2";
-
-/**
- * Helper function to paginate Mongoose models with search functionality.
- *
- * @param {Model} model - The Mongoose model to paginate.
- * @param {Object} query - The query object to filter the documents.
- * @param {Object} options - Pagination options including page, limit, sort, and select.
- * @param {string} search - Search term for relevant fields.
- * @returns {Object} - The paginated result including docs, totalDocs, totalPages, etc.
- */
 const paginate = async (model, query = {}, options = {}, search = '') => {
     const defaultOptions = {
         page: 1,
@@ -22,7 +11,7 @@ const paginate = async (model, query = {}, options = {}, search = '') => {
     // Dynamically adjust the query based on the model
     if (search) {
         const modelName = model.modelName;
-        console.log(modelName)
+        console.log(modelName);
 
         switch (modelName) {
             case 'Student':

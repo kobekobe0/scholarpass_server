@@ -21,8 +21,8 @@ export const getStudentLogs = async (req, res) => {
         }
 
         // Call the paginate function with model, query, and pagination options
-        const logs = await paginate(StudentLog, query, { page, limit, sort: { timeIn: -1 } }, search);
-
+        const logs = await paginate(StudentLog, query, { page, limit, sort: { timeIn: -1 }, populate: 'vehicle' }, search);
+        console.log(logs);
         return res.status(200).json(logs);
     } catch (error) {
         console.error(error);
@@ -41,10 +41,19 @@ export const getStudentViolation = async (req, res) => {
 }
 
 export const getStudentForLogging = async (req, res) => {
-    const {studentID, vehicleID} = req.query // qrCode
+    let {studentID, vehicleID, studentNumber} = req.query // qrCode
 
     try{
         let vehicle = null
+        if(!studentID){
+            if(studentNumber) {
+                const student = await Student.findOne({studentNumber})
+                if(!student) return res.status(404).json({message: 'Student not found'})
+                studentID = student._id
+            } else {
+                return res.status(400).json({message: 'Student ID or Student Number is required'})
+            }
+        }
         const student = await Student.findById(studentID)
         if(!student) return res.status(404).json({message: 'Student not found'})
 

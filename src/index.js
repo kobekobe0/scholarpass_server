@@ -100,23 +100,6 @@ app.use('/api/qr', qrRouter)
 
 createDefaultConfig();
 
-//shutdown
-app.post('/api/shutdown', (req, res) => {
-    console.log('Shutting down server');
-    try{
-        exec('sudo /sbin/shutdown -h now', (error, stdout, stderr) => {
-            if (error) {
-                console.error(`Error executing shutdown: ${error}`);
-                return res.status(500).json({ message: 'Failed to shut down server' });
-            }
-            res.status(200).json({ message: 'Server is shutting down' });
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Failed to shut down server' });
-    }
-});
-
 createDefaultAdmin();
 
 app.post('/api/backup', async (req, res) => {

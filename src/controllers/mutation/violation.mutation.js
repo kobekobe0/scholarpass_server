@@ -2,7 +2,7 @@ import Student from "../../models/Student.js";
 import ViolationLog from "../../models/ViolationLog.js";
 
 export const logViolation = async (req, res) => {
-    const {studentID, severity, violation, studentNumber} = req.body;
+    let {studentID, severity, violation, studentNumber} = req.body;
     //const {_id} = req.user; 
 
     try {

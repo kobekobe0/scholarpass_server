@@ -12,6 +12,7 @@ export const getSecurityGuards = async (req, res) => {
 
 export const getSecurityGuard = async (req, res) => {
     const {id} = req.params;
+    console.log("ID: ", req.params)
     try {
         const guard = await SecurityGuard.findById(id).select('-password -__v -deleted');
         if(!guard) return res.status(404).json({message: 'Security guard not found'});

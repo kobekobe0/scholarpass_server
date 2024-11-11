@@ -2,6 +2,7 @@ import generateAuthToken from "../../helper/generateAuthToken.js";
 import SecurityGuard from "../../models/SecurityGuard.js";
 import { createSystemLog } from "../../middleware/createSystemLog.js";
 import bcrypt from "bcryptjs";
+import Admin from "../../models/Admin.js";
 
 export const loginSecurityGuard = async (req, res) => {
     const {username, password} = req.body;
@@ -44,8 +45,14 @@ export const toggleGuardAccount = async (req, res) => {
 
 export const updateSecurityGuard = async (req, res) => {
     const {id} = req.params;
-    const securityGuard = req.body;
+    const {_id} = req.user
+    const {securityGuard, adminPassword} = req.body;
     try{
+        const admin = await Admin.findById(_id);
+        if(!admin) return res.status(404).json({message: "Admin not found"});
+        const isMatch = await bcrypt.compare(adminPassword, admin.password);
+        if(!isMatch) return res.status(401).json({message: "Invalid credentials"});
+        
         const updatedSecurityGuard = await SecurityGuard.findByIdAndUpdate
         (id, securityGuard, {new: true});
     
@@ -66,11 +73,16 @@ export const updateSecurityGuard = async (req, res) => {
 export const updatePasswordSecurityGuard = async (req, res) => {
     try{
         const {id} = req.params;
-        const {oldPassword, newPassword} = req.body;
+        const {newPassword, adminPassword} = req.body;
+        
+        const admin = await Admin.findById(req.user._id);
+        if(!admin) return res.status(404).json({message: "Admin not found"});
+
+        const isMatchAdmin = await bcrypt.compare(adminPassword, admin.password);
+        if(!isMatchAdmin) return res.status(401).json({message: "Invalid credentials"});
+
         const securityGuard = await SecurityGuard.findById(id);
         if(!securityGuard) return res.status(404).json({message: "Security Guard not found"});
-        const isMatch = await bcrypt.compare(oldPassword, securityGuard.password);
-        if(!isMatch) return res.status(401).json({message: "Invalid credentials"});
         const hashedPassword = await bcrypt.hash(newPassword, 12);
         securityGuard.password = hashedPassword;
         await securityGuard.save();
@@ -102,5 +114,25 @@ export const createSecurityGuard = async (req, res) => {
     } catch (error) {
         console.error(error);
         return res.status(500).json({message: "Failed to create security guard"});
+    }
+}
+
+export const deleteSecurityGuard = async (req, res) => {
+    const {id, adminPassword} = req.params;
+    try{
+
+        const admin = await Admin.findById(req.user._id);
+        if(!admin) return res.status(404).json({message: "Admin not found"});
+        const isMatch = await bcrypt.compare(adminPassword, admin.password);
+        if(!isMatch) return res.status(401).json({message: "Invalid credentials"});
+
+        const securityGuard = await SecurityGuard.findById(id);
+        if(!securityGuard) return res.status(404).json({message: "Security Guard not found"});
+        securityGuard.deleted = true;
+        await securityGuard.save();
+        return res.status(200).json({message: "Security Guard deleted successfully"});
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({message: "Failed to delete security guard"});
     }
 }

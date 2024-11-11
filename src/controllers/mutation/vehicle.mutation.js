@@ -47,6 +47,23 @@ export const updateVehicle = async (req, res) => {
         return res.status(500).json({ message: "Failed to update vehicle", error: error.message });
     }
 }
+export const updateVehicleImage = async (req, res) => {
+    const { id } = req.params;
+    const image = `${req.filename}`;
+
+    try {
+        const updatedVehicle = await Vehicle.findByIdAndUpdate(id, {
+            image
+        }, { new: true });
+        if (updatedVehicle) {
+            await createSystemLog("UPDATE", "VEHICLE", updatedVehicle._id, "Vehicle", `Vehicle ${updatedVehicle.plateNumber} image updated`, null);
+            return res.status(200).json(updatedVehicle);
+        }
+        return res.status(404).json({ message: "Vehicle not found" });
+    } catch (error) {
+        return res.status(500).json({ message: "Failed to update vehicle", error: error.message });
+    }
+}
 
 export const deleteVehicle = async (req, res) => {
     const { id } = req.params;

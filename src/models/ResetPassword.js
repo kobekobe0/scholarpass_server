@@ -3,7 +3,9 @@ import { Schema, model } from "mongoose";
 const resetPasswordSchema = new Schema({
     studentNumber: {
         type: String,
-        required: true,
+    },
+    email: {
+        type: String,
     },
     expires: {
         type: Date,
