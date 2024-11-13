@@ -82,6 +82,9 @@ export const getCurrentDayLogsGroupedByTimeIn = async (req, res) => {
     // Adjust to Manila time
     const startInManila = new Date(start.getTime() + manilaOffset);
     const endInManila = new Date(end.getTime() + manilaOffset);
+
+    console.log(startInManila)
+    console.log(endInManila)
     
     const timeSlots = [];
     for (let hour = 6; hour < 20; hour++) {
