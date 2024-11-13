@@ -73,7 +73,7 @@ export const getCurrentDayLogsGroupedByTimeIn = async (req, res) => {
     const today = new Date();
     const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 6, 0, 0);
     const end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 20, 0, 0);
-
+    console.log(start, end);
     const timeSlots = [];
     for (let hour = 6; hour < 20; hour++) {
         timeSlots.push({ hour, minute: 0 });
