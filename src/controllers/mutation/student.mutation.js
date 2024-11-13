@@ -73,7 +73,10 @@ export const updateStudent = async (req, res) => {
     const student = req.body;
 
     try {
-        const updatedStudent = await Student.findByIdAndUpdate(id, student, { new: true });
+        const updatedStudent = await Student.findByIdAndUpdate(id, {
+            ...student,
+            valid: true
+        }, { new: true });
         if(updatedStudent){
             await createSystemLog('UPDATE', 'Student', updatedStudent._id, 'Student', 'Student updated', null);
         } else {

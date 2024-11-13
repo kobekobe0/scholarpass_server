@@ -142,27 +142,41 @@ export const logViolation = async (req, res) => {
 
 
 export const getStatisticsToday = async (req, res) => {
-    //total logs with unique students
-    //total logs with vehicles used unique vehicles
-    //total visitors
-
     try {
+        // Set start and end of the day in Manila time
         const today = new Date();
-        const logs = await StudentLog.find({ logDate: new Date(today.getFullYear(), today.getMonth(), today.getDate()) }).select('studentID vehicle');
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+
+        // Filter logs within today's date range
+        const logs = await StudentLog.find({
+            logDate: { $gte: startOfDay, $lte: endOfDay }
+        }).select('studentID vehicle');
+
+        // Get unique students and vehicles
         const uniqueStudents = new Set();
         const uniqueVehicles = new Set();
-        for(let log of logs) {
+        for (let log of logs) {
             uniqueStudents.add(log.studentID);
-            if(log.vehicle) uniqueVehicles.add(log.vehicle);
+            if (log.vehicle) uniqueVehicles.add(log.vehicle);
         }
 
-        const totalVisitors = await VisitorLog.countDocuments({ logDate: new Date(today.getFullYear(), today.getMonth(), today.getDate()) });
+        // Count visitor logs within today's date range
+        const totalVisitors = await VisitorLog.countDocuments({
+            logDate: { $gte: startOfDay, $lte: endOfDay }
+        });
 
-        return res.status(200).json({ totalLogs: logs.length, uniqueStudents: uniqueStudents.size, uniqueVehicles: uniqueVehicles.size, totalVisitors });
+        return res.status(200).json({
+            totalLogs: logs.length,
+            uniqueStudents: uniqueStudents.size,
+            uniqueVehicles: uniqueVehicles.size,
+            totalVisitors
+        });
     } catch (error) {
         return res.status(500).json({ message: "Failed to get statistics", error: error.message });
     }
-}
+};
+
 
 export const getRecentLogs = async (req, res) => {
     //accept number of logs to return
