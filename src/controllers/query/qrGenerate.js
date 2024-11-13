@@ -7,132 +7,84 @@ import { PassThrough } from 'stream';
 import Student from '../../models/Student.js';
 import Vehicle from '../../models/Vehicle.js';
 import { encryptObject } from '../../helper/encryption.js';
+import TextToSVG from 'text-to-svg';
+import path from 'path';
+import { createCanvas, loadImage } from 'canvas';
+
+const createTextImage = (text, fontSize = 30) => {
+    const canvas = createCanvas(500, 150);
+    const ctx = canvas.getContext('2d');
+
+    // Set font and styles
+    ctx.font = `${fontSize}px sans-serif`;
+    ctx.fillStyle = 'rgb(15, 15, 15, 0.9)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Draw text
+    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+    return canvas.toBuffer();
+};
 
 export const qrGenerateVisitor = async (req, res) => {
     const { CardID, details } = req.body;
-    
+
     try {
         // Fetch the template image (base64) from the database
         const cardObject = await Card.findById(CardID).select('templateImage');
-        if (!cardObject) {
-            return res.status(404).json({ message: 'Card not found' });
-        }
-
+        if (!cardObject) return res.status(404).json({ message: 'Card not found' });
         const templateBase64 = cardObject.templateImage;
-
-        // Validate the base64 string
         if (!templateBase64.startsWith('data:image')) {
             return res.status(400).json({ message: 'Invalid template image format' });
         }
-
-        // Convert base64 image to a buffer
         const templateBuffer = Buffer.from(templateBase64.split(',')[1], 'base64');
 
-        // Create a PDF document
-        const doc = new PDFDocument({
-            size: 'LETTER', // 8x11 inches
-            margin: 10,
-        });
-
-        // Set the response headers for the PDF file
+        const doc = new PDFDocument({ size: 'LETTER', margin: 10 });
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', 'attachment; filename=qr_codes.pdf');
-
-        // Create a PassThrough stream to pipe the PDF to the response
         const passThrough = new PassThrough();
         doc.pipe(passThrough);
         passThrough.pipe(res);
 
-        // Define layout parameters
-        const cardWidth = 200; // Width of each card in the grid
-        const cardHeight = 300; // Height of each card
-        const margin = 5; // Margin between cards
-        const cardsPerRow = 3; // Number of cards per row
+        const cardWidth = 200;
+        const cardHeight = 300;
+        const margin = 5;
+        const cardsPerRow = 3;
 
-        // Process each detail to generate QR codes and add to the PDF
         for (const [index, detail] of details.entries()) {
             const detailString = JSON.stringify(detail);
-
             const encryptedData = encryptObject(detailString);
-
-            // Generate the QR code buffer with a transparent background
             const qrCodeBuffer = await QRCode.toBuffer(encryptedData, {
                 errorCorrectionLevel: 'H',
-                width: 360, // Set QR code size to 370x370
+                width: 360,
                 margin: 1,
-                color: {
-                    dark: '#000000',  // Black QR code
-                    light: '#00000000' // Transparent background
-                }
+                color: { dark: '#000000', light: '#00000000' }
             });
 
-            // Load the template image buffer
             const templateImage = await sharp(templateBuffer)
-                .resize(500, 707) // Resize the template to match the desired output dimensions
+                .resize(500, 707)
                 .toBuffer();
 
-            // Create an image with text (Visitor Pass and card number)
-            const textBuffer = await sharp({
-                create: {
-                    width: 500,
-                    height: 150, // Increased height for both texts
-                    channels: 4,
-                    background: { r: 0, g: 0, b: 0, alpha: 0 } // Transparent background
-                }
-            })
-                .composite([{
-                    input: Buffer.from(
-                        `<svg width="500" height="150">
-                            <text x="50%" y="50%" font-weight="semibold" font-size="30" text-anchor="middle" fill="rgb(15, 15, 15, 90)" dominant-baseline="middle">
-                                Visitor Pass
-                            </text>
-                            <text x="50%" y="100" font-size="20" text-anchor="middle" fill="rgb(15, 15, 15, 90)" dominant-baseline="middle">
-                                ${detail.cardNumber}
-                            </text>
-                        </svg>`
-                    ),
-                    top: 0,
-                    left: 0
-                }])
-                .png()
-                .toBuffer();
+            // Generate Visitor Pass and Card Number as images
+            const visitorPassTextBuffer = createTextImage('Visitor Pass', 40);
+            const cardNumberTextBuffer = createTextImage(detail.cardNumber, 20);
 
-            // Combine the QR code and text into one image
             const qrWithOverlay = await sharp(templateImage)
                 .composite([
-                    {
-                        input: qrCodeBuffer,
-                        top: Math.round((707 - 370) / 2), // Center QR code vertically
-                        left: Math.round((500 - 370) / 2) // Center QR code horizontally
-                    },
-                    {
-                        input: textBuffer,
-                        top: Math.round((707 - 370) / 2) + 370 + 50, // Position text 50px below the QR code
-                        left: 0 // Center horizontally
-                    }
+                    { input: qrCodeBuffer, top: 169, left: 65 },
+                    { input: visitorPassTextBuffer, top: 539, left: 0 },
+                    { input: cardNumberTextBuffer, top: 589, left: 0 }
                 ])
                 .png()
                 .toBuffer();
 
-            // Add the image to the PDF in a grid layout
             const x = (index % cardsPerRow) * (cardWidth + margin);
             const y = Math.floor(index / cardsPerRow) * (cardHeight + margin);
+            if (y + cardHeight > doc.page.height) doc.addPage();
 
-            // Add a new page if the current position exceeds the page size
-            if (y + cardHeight > doc.page.height) {
-                doc.addPage();
-            }
-
-            // Draw the image onto the PDF
-            doc.image(qrWithOverlay, x, y, {
-                width: cardWidth,
-                height: cardHeight,
-                align: 'center',
-                valign: 'center'
-            });
+            doc.image(qrWithOverlay, x, y, { width: cardWidth, height: cardHeight, align: 'center', valign: 'center' });
         }
 
-        // Finalize the PDF and end the stream
         doc.end();
 
     } catch (error) {
@@ -145,7 +97,7 @@ export const qrGenerateVisitor = async (req, res) => {
 
 export const qrGenerateStudent = async (req, res) => {
     const { studentID, vehicleID, cardID } = req.body;
-    console.log("BODY: ",req.body)
+
     try {
         // Fetch the template image (base64) from the database
         const cardObject = await Card.findById(cardID).select('templateImage');
@@ -155,12 +107,10 @@ export const qrGenerateStudent = async (req, res) => {
 
         const templateBase64 = cardObject.templateImage;
 
-        // Validate the base64 string
+        // Validate and convert base64 image to a buffer
         if (!templateBase64.startsWith('data:image')) {
             return res.status(400).json({ message: 'Invalid template image format' });
         }
-
-        // Convert base64 image to a buffer
         const templateBuffer = Buffer.from(templateBase64.split(',')[1], 'base64');
 
         // Fetch student details
@@ -172,91 +122,75 @@ export const qrGenerateStudent = async (req, res) => {
         // Fetch vehicle details if vehicleID is provided
         let vehicleModel = '';
         if (vehicleID) {
-            const vehicle = await Vehicle.findOne({_id: vehicleID, deleted: false}).select('model');
+            const vehicle = await Vehicle.findOne({ _id: vehicleID, deleted: false }).select('model');
             if (vehicle) {
                 vehicleModel = vehicle.model;
             }
         }
 
-        let qrData = {}
-
-        if(vehicleID) qrData.vehicleID = vehicleID
-        qrData.studentID = studentID
-
+        // Prepare data for QR code
+        const qrData = { studentID, vehicleID };
         const stringData = JSON.stringify(qrData);
-
-        console.log("DATA TO PUT: ", qrData)
-
         const encryptedData = encryptObject(stringData);
 
-        // Create the QR code buffer with student number
+        // Generate the QR code buffer
         const qrCodeBuffer = await QRCode.toBuffer(encryptedData, {
             errorCorrectionLevel: 'H',
             width: 350,
             margin: 1,
             color: {
-                dark: '#000000',  // Black QR code
-                light: '#00000000' // Transparent background
+                dark: '#000000',
+                light: '#00000000'
             }
         });
 
-        // Load the template image buffer
+        // Load and resize the template image
         const templateImage = await sharp(templateBuffer)
-            .resize(500, 707) // Resize the template to match the desired output dimensions
+            .resize(500, 707)
             .toBuffer();
 
-        // Create an image with student information
-        const textBuffer = await sharp({
-            create: {
-                width: 500,
-                height: 150, // Height for both texts
-                channels: 4,
-                background: { r: 0, g: 0, b: 0, alpha: 0 } // Transparent background
-            }
-        })
-            .composite([{
-                input: Buffer.from(
-                    `<svg width="500" height="150">
-                        <text x="50%" y="40%" font-weight="bold" font-size="30" text-anchor="middle" fill="rgb(0,0,0)" dominant-baseline="middle">
-                            ${student.name}
-                        </text>
-                        <text x="50%" y="85" font-size="15" font-weight="medium" text-anchor="middle" fill="rgb(15, 15, 15, 90)" dominant-baseline="middle" >
-                            ${student.studentNumber}
-                        </text>
-                        <text x="50%" y="110" font-size="20" text-anchor="middle" fill="rgb(15, 15, 15, 80)" dominant-baseline="middle">
-                            ${vehicleModel ? vehicleModel : ""}
-                        </text>
-                    </svg>`
-                ),
-                top: 0,
-                left: 0
-            }])
-            .png()
-            .toBuffer();
+        // Use Canvas to create the text image
+        const textCanvas = createCanvas(500, 150);
+        const ctx = textCanvas.getContext('2d');
+        ctx.fillStyle = 'rgb(0, 0, 0)';
+        ctx.textAlign = 'center';
 
-        // Combine the QR code and text into one image
+        // Render student name
+        ctx.font = 'bold 30px Arial';
+        ctx.fillText(student.name, 250, 50);
+
+        // Render student number
+        ctx.font = '15px Arial';
+        ctx.fillText(student.studentNumber, 250, 85);
+
+        // Render vehicle model if available
+        if (vehicleModel) {
+            ctx.font = '20px Arial';
+            ctx.fillText(vehicleModel, 250, 110);
+        }
+
+        const textBuffer = textCanvas.toBuffer();
+
+        // Combine the QR code, template, and text into one image
         const qrWithOverlay = await sharp(templateImage)
             .composite([
                 {
                     input: qrCodeBuffer,
-                    top: Math.round((707 - 350) / 2), // Center QR code vertically
-                    left: Math.round((500 - 350) / 2) // Center QR code horizontally
+                    top: Math.round((707 - 350) / 2),
+                    left: Math.round((500 - 350) / 2)
                 },
                 {
                     input: textBuffer,
-                    top: Math.round((707 - 370) / 2) + 370 + 20, // Position text below the QR code
-                    left: 0 // Center horizontally
+                    top: Math.round((707 - 350) / 2) + 370 + 20,
+                    left: 0
                 }
             ])
             .png()
             .toBuffer();
-        
-        console.log(vehicleModel)
-        console.log(student)
 
+        // Send the final image as a response
         res.setHeader('Content-Type', 'image/png');
         res.send(qrWithOverlay);
-        
 
     } catch (error) {
         console.error('Error generating QR code overlay:', error);
