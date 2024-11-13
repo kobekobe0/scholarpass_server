@@ -71,21 +71,9 @@ export const getStudentForLogging = async (req, res) => {
 
 export const getCurrentDayLogsGroupedByTimeIn = async (req, res) => {
     const today = new Date();
-
-    // Oregon to Manila offset in hours (16 hours ahead)
-    const manilaOffset = 16 * 60 * 60 * 1000; // Convert to milliseconds
-    
-    // Set start and end times in Oregon time
     const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 6, 0, 0);
     const end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 20, 0, 0);
-    
-    // Adjust to Manila time
-    const startInManila = new Date(start.getTime() + manilaOffset);
-    const endInManila = new Date(end.getTime() + manilaOffset);
 
-    console.log(startInManila)
-    console.log(endInManila)
-    
     const timeSlots = [];
     for (let hour = 6; hour < 20; hour++) {
         timeSlots.push({ hour, minute: 0 });
@@ -96,7 +84,7 @@ export const getCurrentDayLogsGroupedByTimeIn = async (req, res) => {
         const logs = await StudentLog.aggregate([
             {
                 $match: {
-                    timeIn: { $gte: startInManila, $lt: endInManila }
+                    timeIn: { $gte: start, $lt: end }
                 }
             },
             {
