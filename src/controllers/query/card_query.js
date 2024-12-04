@@ -2,7 +2,7 @@ import Card from "../../models/Card.js";
 
 export const getAvailableCards = async (req, res) => {
     try {
-        const cards = await Card.find({ active: true, deleted: false }).select('name displayImage price material');
+        const cards = await Card.find({ active: true, deleted: false }).select('name displayImage price material type');
         return res.status(200).json(cards);
     } catch (error) {
         console.error(error);

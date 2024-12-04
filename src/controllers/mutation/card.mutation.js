@@ -7,8 +7,13 @@ export const createCard = async (req, res) => {
 
     try {
         //image and template image will come from multer
+
+        const existingType = await Card.findOne({ type: card.type.toUpperCase() }).select("_id type");
+        if(existingType) return res.status(400).json({ message: 'Card design for this user type already exists. Delete the current design first.' });
+
         const newCard = await Card.create({
             name: card.name,
+            type: card.type.toUpperCase(),
             displayImage: displayImage,
             templateImage: templateImage,
         });

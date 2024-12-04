@@ -31,7 +31,9 @@ export const qrGenerateVisitor = async (req, res) => {
 
     try {
         // Fetch the template image (base64) from the database
-        const cardObject = await Card.findById(CardID).select('templateImage');
+        const cardObject = await Card.findOne({
+            type: "VISITOR"
+        }).select('templateImage');
         if (!cardObject) return res.status(404).json({ message: 'Card not found' });
         const templateBase64 = cardObject.templateImage;
         if (!templateBase64.startsWith('data:image')) {
@@ -100,7 +102,17 @@ export const qrGenerateStudent = async (req, res) => {
 
     try {
         // Fetch the template image (base64) from the database
-        const cardObject = await Card.findById(cardID).select('templateImage');
+        let cardObject = null
+        if(!vehicleID){
+            cardObject = await Card.findOne({
+                type: "STUDENT"
+            }).select('templateImage');
+        } else {
+            cardObject = await Card.findOne({
+                type: "VEHICLE"
+            }).select('templateImage');
+        }
+
         if (!cardObject) {
             return res.status(404).json({ message: 'Card not found' });
         }
