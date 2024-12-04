@@ -35,6 +35,10 @@ const visitorLogSchema = new Schema({
         type: String,
         required: true,
     },
+    guard: {
+        type: String,
+        required: null,
+    }
 }); 
 
 visitorLogSchema.plugin(mongoosePaginate);

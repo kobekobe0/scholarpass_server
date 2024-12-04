@@ -13,7 +13,12 @@ export const guardAuth = async (req, res, next) => {
         const decoded = jwt.verify(token, SECRET_KEY);
         const guard = await SecurityGuard.findById(decoded._id);
         if (!guard) return res.status(404).json({ message: "Unauthorized" });
-        req.user = decoded;
+        console.log(guard)
+        req.user = {
+            ...guard,
+            name: `${guard.name.first} ${guard.name.last}`
+        };
+        console.log("GUARD: ", req.user)
         next();
     } catch (error) {
         console.log(error)

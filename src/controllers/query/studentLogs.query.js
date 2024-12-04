@@ -184,7 +184,7 @@ export const getLogs = async (req, res) => {
         })
             .populate({
                 path: 'studentID',
-                select: 'name studentNumber department',
+                select: 'name studentNumber department guard',
                 match: studentNameFilter 
             })
             .populate('vehicle', 'model')
@@ -194,6 +194,8 @@ export const getLogs = async (req, res) => {
 
         // Filter out logs where the studentID population returned null (no match for studentName)
         const filteredLogs = logs.filter(log => log.studentID !== null);
+
+        console.log(filteredLogs[0])
 
         // Return totalPages, totalDocs, docs
         return res.status(200).json({ totalPages, totalDocs, docs: filteredLogs });

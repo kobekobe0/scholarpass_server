@@ -26,6 +26,12 @@ const cardSchema = new Schema({
         type: Date,
         default: Date.now,
     },
+    type: {
+        enum: ['STUDENT', 'VISITOR', 'VEHICLE'],
+        type: String,
+        required: true,
+        unique: true,
+    }
 });
 
 // Add the pagination plugin to the schema

@@ -61,6 +61,7 @@ export const toggleQR = async (req, res) => {
 
 export const logVisitor = async (req, res) => {
     const { visitor, cardID } = req.body;
+    const {name} = req.user;
 
     try {
         // Convert cardID to ObjectId
@@ -87,7 +88,8 @@ export const logVisitor = async (req, res) => {
             personToVisit: visitor.personToVisit,
             number: visitor.number,
             purpose: visitor.purpose,
-            visitorCardID: idObj
+            visitorCardID: idObj,
+            guard: name
         });
 
         return res.status(200).json({

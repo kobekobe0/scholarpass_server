@@ -4,13 +4,14 @@ import VisitorQR from '../../models/VisitorQR.js';
 import VisitorLog from '../../models/VisitorLog.js';
 import { io } from '../../index.js';
 
-const createStudentLog = async (studentID, vehicleID) => {
+const createStudentLog = async (studentID, vehicleID, name) => {
     const today = new Date();
     const newLog = await StudentLog.create({
         studentID,
         vehicle: vehicleID || null,
         timeIn: new Date(),
-        logDate: new Date(today.getFullYear(), today.getMonth(), today.getDate())
+        logDate: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+        guard: name
     })
     return newLog;
 }
@@ -28,9 +29,10 @@ const logOutStudent = async (studentLog) => {
 export const logStudent = async (req, res) => {
     try {
         const { studentID, vehicleID, status } = req.body;
+        const { name } = req.user;
 
         if(status == "IN") {
-            const newLog = await createStudentLog(studentID, vehicleID);
+            const newLog = await createStudentLog(studentID, vehicleID, name);
             if(!newLog) return res.status(500).json({ message: "Failed to log student" });
             return res.status(200).json({ log: newLog })
         } else if(status == "OUT") {
@@ -75,7 +77,7 @@ export const checkVisitorQR = async (req, res) => {
     }
 }
 
-const createVisitorLog = async (visitor, cardID) => {
+const createVisitorLog = async (visitor, cardID, guard) => {
     const visitorLog = await VisitorLog.create({
         name: visitor?.name,
         purpose: visitor?.purpose,
@@ -85,6 +87,7 @@ const createVisitorLog = async (visitor, cardID) => {
         personToVisit: visitor?.personToVisit,
         number: visitor?.number,
         agency: visitor?.agency,
+        guard: guard
     });
     return visitorLog;
 }
@@ -92,6 +95,7 @@ const createVisitorLog = async (visitor, cardID) => {
 export const logVisitor = async (req, res) => {
     const {visitor} = req.body;
     const cardID = req.params.id;
+    const {name} = req.user;
 
     try {
         const cardQR = await VisitorQR.findById(cardID);
@@ -105,7 +109,7 @@ export const logVisitor = async (req, res) => {
             return res.status(200).json({ message: "Visitor logged out" });
         }
 
-        const newLog = await createVisitorLog(visitor, cardID);
+        const newLog = await createVisitorLog(visitor, cardID, name);
         if(!newLog) return res.status(500).json({ message: "Failed to log visitor" });
         cardQR.inUse = true;
         await cardQR.save();

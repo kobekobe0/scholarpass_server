@@ -26,6 +26,10 @@ const studentLogSchema = new Schema({
     logDate: {
         type: Date,
         default: Date.now
+    },
+    guard: {
+        type: String,
+        default: null
     }
 }); 
 

@@ -27,6 +27,24 @@ const ViolationSchema = new Schema({
     }
 });
 
+const cardDesign = new Schema({
+    visitor: {
+        type: String,
+        ref: "Card",
+        default: ''
+    },
+    student: {
+        type: String,
+        ref: "Card",
+        default: ''
+    },
+    vehicle: {
+        type: String,
+        ref: "Card",
+        default: ''
+    },
+})
+
 const configSchema = new Schema({
     SY: {
         type: SYSchema,
@@ -35,7 +53,7 @@ const configSchema = new Schema({
     violationTypes: {
         type: [ViolationSchema],
         required: true
-    },
+    }
 }); 
 
 const Config = model("Config", configSchema);
